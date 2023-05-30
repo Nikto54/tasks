@@ -1,15 +1,8 @@
 import telebot
-import requests
+from config import TOKEN,values
+from extensions import APIException,ValuesConverter
 
-TOKEN='6067999162:AAGl0AcjbV232zp9nZHp2wYwaUiZP1wz0a4'
 bot=telebot.TeleBot(TOKEN)
-values={
-    'Евро':'EUR',
-    'Доллар':'USD',
-    'Рубль':'RUB'
-}
-
-
 
 @bot.message_handler(commands=['start','help'])
 def start(message):
@@ -19,14 +12,23 @@ def start(message):
 @bot.message_handler(commands=['values'])
 def help_value(message):
     text=''
-    for i in values.values():
+    for i in values.keys():
         text+=i+'\n'
     bot.send_message(message.chat.id,text)
 
 @bot.message_handler(content_types=['text'])
 def exchange(message):
-    data = requests.get('https://www.cbr-xml-daily.ru/daily_json.js').json()
-    qoute,base,amount=message.text.split(' ')
-    bot.send_message(message.chat.id, int(amount)*data['Valute'][qoute]['Value']/data['Valute'][base]['Value'])
+    try:
+        text = message.text.split(' ')
+        if len(text) != 3:
+            raise APIException('Неверное количество параметров,их должно быть 3')
+        qoute, base, amount = text
+    except APIException as e:
+        bot.reply_to(message, f"Ошибка в команде:\n{e}")
+    except Exception as e:
+        bot.reply_to(message, f"Неизвестная ошибка:\n{e}")
+    else:
+        answer = ValuesConverter.get_price(qoute,base,amount)
+        bot.send_message(message,answer)
 
 bot.polling(none_stop=True)
