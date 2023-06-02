@@ -9,6 +9,7 @@ class ValuesConverter:
 
         if qoute == base:
             raise APIException('Вы указали одинаковые валюты')
+
         try:
             main_qoute = values[qoute]
         except KeyError:

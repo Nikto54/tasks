@@ -23,12 +23,13 @@ def exchange(message):
         if len(text) != 3:
             raise APIException('Неверное количество параметров,их должно быть 3')
         qoute, base, amount = text
+        answer = ValuesConverter.get_price(qoute, base, amount)
     except APIException as e:
         bot.reply_to(message, f"Ошибка в команде:\n{e}")
     except Exception as e:
         bot.reply_to(message, f"Неизвестная ошибка:\n{e}")
     else:
-        answer = ValuesConverter.get_price(qoute,base,amount)
-        bot.send_message(message,answer)
+
+        bot.send_message(message.chat.id,answer)
 
 bot.polling(none_stop=True)
